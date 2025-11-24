@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dubai Estate AI Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 18px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a237e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            color: #1e88e5;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Main Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-wrapper {
+            width: 100%;
+            max-width: 900px;
+            height: 75vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Messages Area */
+        .messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+            animation: fadeInUp 0.4s ease;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .bot {
+            background: white;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 6px;
+            border: 1px solid #e3e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .message strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .user strong {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .bot strong {
+            color: #1e88e5;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e3e8f0;
+            max-width: 120px;
+            margin-right: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #9e9e9e;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        .typing-text {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Input Section */
+        .input-section {
+            padding: 20px 25px;
+            background: white;
+            border-top: 1px solid #eaeef2;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            padding-right: 50px;
+            border: 2px solid #e3e8f0;
+            border-radius: 15px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        input:focus {
+            border-color: #1e88e5;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+        }
+
+        input::placeholder {
+            color: #9aa5b5;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 16px 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 136, 229, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+        }
+
+        .welcome-message i {
+            font-size: 48px;
+            color: #1e88e5;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 10px;
+            }
+
+            .chat-wrapper {
+                height: 85vh;
+                border-radius: 15px;
+            }
+
+            .messages {
+                padding: 15px;
+            }
+
+            .message {
+                max-width: 85%;
+                font-size: 14px;
+            }
+
+            .input-section {
+                padding: 15px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            input, .send-button {
+                padding: 14px 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .message {
+                max-width: 90%;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .header-subtitle {
+                font-size: 12px;
+            }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 25px 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            background: white;
+            border: 1px solid #e3e8f0;
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 13px;
+            color: #1e88e5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .quick-action:hover {
+            background: #1e88e5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-title">
+            <i class="fas fa-robot"></i>
+            Dubai Estate AI Chatbot
+        </div>
+        <div class="header-subtitle">
+            Your Intelligent Real Estate Assistant
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-wrapper">
+            <div class="messages" id="messages">
+                <!-- Welcome message will be added by JavaScript -->
+            </div>
+
+            <div class="quick-actions" id="quickActions">
+                <div class="quick-action" onclick="sendQuickMessage('Show properties in Dubai Marina')">
+                    🏙️ Dubai Marina
+                </div>
+                <div class="quick-action" onclick="sendQuickMessage('What are prices in JVC?')">
+                    🏡 JVC Prices
+                </div>
+                <div class="quick-action" onclick="sendQuickMessage('Tell me about Downtown Dubai')">
+                    🌆 Downtown Dubai
+                </div>
+                <div class="quick-action" onclick="sendQuickMessage('Contact information')">
+                    📞 Contact Info
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="input-wrapper">
+                    <input type="text" id="userInput" placeholder="Ask about properties, prices, or contact information..." />
+                </div>
+                <button class="send-button" onclick="sendMessage()" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const botName = "{{ bot_name }}";
+        let isWaitingForResponse = false;
+
+        function showTyping() {
+            const container = document.getElementById("messages");
+            const typingDiv = document.createElement("div");
+            typingDiv.className = "typing-indicator";
+            typingDiv.id = "typingIndicator";
+
+            typingDiv.innerHTML = `
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="typing-text">Typing...</div>
+            `;
+
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeTyping() {
+            const typingIndicator = document.getElementById("typingIndicator");
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function addMessage(sender, text) {
+            const container = document.getElementById("messages");
+            const messageDiv = document.createElement("div");
+
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : botName}</strong>${text}`;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+
+            // Hide quick actions after first user message
+            if (sender === 'user') {
+                document.getElementById('quickActions').style.display = 'none';
+            }
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('userInput').value = message;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const sendButton = document.getElementById("sendButton");
+            const message = input.value.trim();
+
+            if (!message || isWaitingForResponse) return;
+
+            addMessage("user", message);
+            input.value = "";
+            sendButton.disabled = true;
+            isWaitingForResponse = true;
+
+            showTyping();
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                removeTyping();
+
+                if (response.ok) {
+                    addMessage("bot", data.reply);
+                } else {
+                    addMessage("bot", `❌ Sorry, I encountered an error: ${data.error || 'Please try again later.'}`);
+                }
+
+            } catch (error) {
+                removeTyping();
+                addMessage("bot", `❌ Network error: Please check your connection and try again.`);
+                console.error('Chat error:', error);
+            } finally {
+                sendButton.disabled = false;
+                isWaitingForResponse = false;
+                input.focus();
+            }
+        }
+
+        // Event listeners
+        document.getElementById("userInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !isWaitingForResponse) {
+                sendMessage();
+            }
+        });
+
+        // Initialize chat
+        window.addEventListener('DOMContentLoaded', () => {
+            addMessage("bot", `👋 Hello! I'm <strong>${botName}</strong>, your intelligent Dubai Real Estate assistant. I can help you with:\n\n• Property prices and trends\n• Community information\n• Investment opportunities\n• Contact details\n• Market insights\n\nFeel free to ask me anything about Dubai real estate!`);
+
+            // Focus input field
+            document.getElementById('userInput').focus();
+        });
+
+        // Auto-resize input field (optional enhancement)
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
